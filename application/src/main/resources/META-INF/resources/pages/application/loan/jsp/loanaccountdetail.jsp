@@ -472,7 +472,29 @@ boolean isDisplay = (new ConfigurationPersistence().getConfigurationValueInteger
 							</table>
 						</c:if>
 					</c:if> <!--  -->
-
+					
+					<table width="96%" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td width="50%" height="23" class="fontnormalbold">
+                                <mifos:mifoslabel name="client.GuaranteeInfoHeading" bundle="ClientUIResources"></mifos:mifoslabel>
+                            </td>
+                                <c:url value="linkGuarantor.ftl" var="linkGuarantorUrl">
+                                    <c:param name="currentFlowKey" value="${requestScope.currentFlowKey}"/>
+                                    <c:param name="customerId" value="${loanInformationDto.customerId}"/>
+                                    <c:param name="accountId" value="${loanInformationDto.accountId}"/>
+                                    <c:param name="prdOfferingName" value="${loanInformationDto.prdOfferingName}"/>
+                                    <c:param name="globalAccountNum" value="${loanInformationDto.globalAccountNum}"/>
+                                </c:url></br>
+                            <td width="50%" align="right" class="fontnormal"> <html-el:link styleId="viewClientDetails.link.linkGuarantor"
+                            href="${linkGuarantorUrl}">
+                            <mifos:mifoslabel name="client.LinkGuarantor" bundle="ClientUIResources"></mifos:mifoslabel>
+                            </html-el:link></td>
+                        </tr>
+                        
+                   </table>
+               <mifoscustom:mifostabletag source="recentAccountActivities"
+               scope="session" xmlFileName="RecentAccountActivity.xml"
+               moduleName="org/mifos/accounts/loan/util/resources" passLocale="true" />
 					<table width="96%" border="0" cellpadding="0" cellspacing="0">
 						<tr id="collateral">
 							<td class="fontnormal"><br>

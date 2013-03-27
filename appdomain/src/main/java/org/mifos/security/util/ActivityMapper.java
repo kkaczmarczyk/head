@@ -751,6 +751,7 @@ public class ActivityMapper {
         security.allow("waiveChargeOverDue", SecurityConstants.VIEW);
         security.allow("redoLoanBegin", SecurityConstants.CAN_REDO_LOAN_DISPURSAL);
         security.allow("captureQuestionResponses", SecurityConstants.VIEW);
+        security.allow("linkGuarantor", SecurityConstants.VIEW);
         security.allow("editQuestionResponses", SecurityConstants.VIEW);
         security.allow("validateInstallments", SecurityConstants.VIEW);
         security.allow("showPreview", SecurityConstants.VIEW);

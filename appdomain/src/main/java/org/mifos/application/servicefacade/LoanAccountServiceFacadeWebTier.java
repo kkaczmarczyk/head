@@ -74,6 +74,7 @@ import org.mifos.accounts.fund.business.FundBO;
 import org.mifos.accounts.fund.persistence.FundDao;
 import org.mifos.accounts.fund.servicefacade.FundCodeDto;
 import org.mifos.accounts.fund.servicefacade.FundDto;
+import org.mifos.accounts.loan.business.GuarantyEntity;
 import org.mifos.accounts.loan.business.LoanActivityEntity;
 import org.mifos.accounts.loan.business.LoanBO;
 import org.mifos.accounts.loan.business.LoanPerformanceHistoryEntity;
@@ -108,6 +109,7 @@ import org.mifos.accounts.productdefinition.business.QuestionGroupReference;
 import org.mifos.accounts.productdefinition.business.VariableInstallmentDetailsBO;
 import org.mifos.accounts.productdefinition.persistence.LoanProductDao;
 import org.mifos.accounts.productdefinition.util.helpers.InterestType;
+import org.mifos.accounts.savings.persistence.GenericDao;
 import org.mifos.accounts.servicefacade.UserContextFactory;
 import org.mifos.accounts.util.helpers.AccountActionTypes;
 import org.mifos.accounts.util.helpers.AccountConstants;
@@ -168,6 +170,7 @@ import org.mifos.core.MifosRuntimeException;
 import org.mifos.customers.api.CustomerLevel;
 import org.mifos.customers.business.CustomerBO;
 import org.mifos.customers.client.business.ClientBO;
+import org.mifos.customers.exceptions.CustomerException;
 import org.mifos.customers.group.util.helpers.GroupConstants;
 import org.mifos.customers.office.business.OfficeBO;
 import org.mifos.customers.office.persistence.OfficeDao;
@@ -225,6 +228,7 @@ import org.mifos.dto.screen.AccountPaymentDto;
 import org.mifos.dto.screen.AccountPenaltiesDto;
 import org.mifos.dto.screen.CashFlowDataDto;
 import org.mifos.dto.screen.ChangeAccountStatusDto;
+import org.mifos.dto.screen.CustomerNoteFormDto;
 import org.mifos.dto.screen.ExpectedPaymentDto;
 import org.mifos.dto.screen.ListElement;
 import org.mifos.dto.screen.LoanAccountDetailDto;
@@ -297,6 +301,7 @@ public class LoanAccountServiceFacadeWebTier implements LoanAccountServiceFacade
     private final LoanScheduleService loanScheduleService;
     private HibernateTransactionHelper transactionHelper;
     private final MonthClosingServiceFacade monthClosingServiceFacade;
+    private final CenterServiceFacade centerServiceFacade;
     private final CustomerPersistence customerPersistence;
     private final ConfigurationPersistence configurationPersistence;
     private final ClientServiceFacade clientServiceFacade;
@@ -313,6 +318,9 @@ public class LoanAccountServiceFacadeWebTier implements LoanAccountServiceFacade
 
     @Autowired
     private LegacyMasterDao legacyMasterDao;
+    
+    @Autowired
+    private GenericDao genericDao;
 
     @Autowired
     private QuestionnaireServiceFacade questionnaireServiceFacade;
@@ -336,7 +344,7 @@ public class LoanAccountServiceFacadeWebTier implements LoanAccountServiceFacade
                                            InstallmentsValidator installmentsValidator, HolidayServiceFacade holidayServiceFacade,
                                            MonthClosingServiceFacade monthClosingServiceFacade,
                                            CustomerPersistence customerPersistence, ConfigurationPersistence configurationPersistence,
-                                           ClientServiceFacade clientServiceFacade, SavingsServiceFacade savingsServiceFacade) {
+                                           ClientServiceFacade clientServiceFacade, SavingsServiceFacade savingsServiceFacade, CenterServiceFacade centerServiceFacade) {
         this.officeDao = officeDao;
         this.loanProductDao = loanProductDao;
         this.customerDao = customerDao;
@@ -355,6 +363,7 @@ public class LoanAccountServiceFacadeWebTier implements LoanAccountServiceFacade
         this.configurationPersistence = configurationPersistence;
         this.clientServiceFacade = clientServiceFacade;
         this.savingsServiceFacade = savingsServiceFacade;
+        this.centerServiceFacade = centerServiceFacade;
     }
 
     public void setTransactionHelper(HibernateTransactionHelper transactionHelper) {
@@ -2685,7 +2694,76 @@ public class LoanAccountServiceFacadeWebTier implements LoanAccountServiceFacade
             throw new MifosRuntimeException(e);
         }
     }
+    
+    public List<CustomerSearchResultDto> retrieveClientsWithoutLoanOwner(CustomerSearchDto customerSearchDto, boolean isNewGLIMCreation, Integer clientId) {
 
+        MifosUser user = (MifosUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserContext userContext = toUserContext(user);
+
+        try {
+            List<CustomerSearchResultDto> pagedDetails = new ArrayList<CustomerSearchResultDto>();
+
+            QueryResult customerForSavings = customerPersistence.searchGroupClient(customerSearchDto.getSearchTerm(), userContext.getId(), isNewGLIMCreation);
+
+            int position = (customerSearchDto.getPage()-1) * customerSearchDto.getPageSize();
+            List<AccountSearchResultsDto> pagedResults = customerForSavings.get(position, customerSearchDto.getPageSize());
+            int i=1;
+            for (AccountSearchResultsDto customerBO : pagedResults) {
+                if(CustomerLevel.getLevel(customerBO.getLevelId())==CustomerLevel.CLIENT && customerBO.getClientId() != clientId){
+                  CustomerSearchResultDto customer = new CustomerSearchResultDto();
+                  customer.setCustomerId(customerBO.getClientId());
+                  customer.setBranchName(customerBO.getOfficeName());
+                  customer.setGlobalId(customerBO.getGlobelNo());
+                  customer.setSearchIndex(i);
+
+                  customer.setCenterName(StringUtils.defaultIfEmpty(customerBO.getCenterName(), "--"));
+                  customer.setGroupName(StringUtils.defaultIfEmpty(customerBO.getGroupName(), "--"));
+                  customer.setClientName(customerBO.getClientName());
+
+                  pagedDetails.add(customer);
+                }
+                  i++;
+            }
+            return pagedDetails;
+        } catch (PersistenceException e) {
+            throw new MifosRuntimeException(e);
+        } catch (HibernateSearchException e) {
+            throw new MifosRuntimeException(e);
+        } catch (ConfigurationException e) {
+            throw new MifosRuntimeException(e);
+        }
+    }
+    
+    public void linkGuarantor(Integer guarantorId, Integer loanId){
+        CustomerBO customerBO = this.customerDao.findCustomerById(guarantorId);
+        LoanBO loanBO = this.loanDao.findById(loanId);
+        if(customerBO == loanDao.findById(loanId).getCustomer()){
+            return;
+        }
+        transactionHelper.startTransaction();
+        GuarantyEntity guaranty = new GuarantyEntity();
+        guaranty.setGuarantorId(guarantorId);
+        guaranty.setLoanId(loanId);
+        guaranty.setActive(true);
+        genericDao.getSession().save(guaranty);
+        try{
+            transactionHelper.commitTransaction();
+        } catch (Exception e) {
+            transactionHelper.rollbackTransaction();
+        }
+    }
+
+    
+    public void handleGuarantors(List <Integer> closedLoanIds){
+        transactionHelper.startTransaction();
+        for(Integer closedLoanId : closedLoanIds){
+            loanDao.findById(closedLoanId);
+            GuarantyEntity guaranty = new GuarantyEntity();
+            guaranty.setGuarantorId(guarantorId);
+            guaranty.setLoanId(loanId);
+            guaranty.setActive(true);
+        }
+    }
     @Override
     public Errors validateLoanDisbursementDate(LocalDate loanDisbursementDate, Integer customerId, Integer productId) {
 
@@ -3157,7 +3235,7 @@ public class LoanAccountServiceFacadeWebTier implements LoanAccountServiceFacade
         }
         return loanType;
     }
-    
+
     @Override
     public void makeEarlyGroupRepayment(RepayLoanInfoDto repayLoanInfoDto, Map<String, Double> memberNumWithAmount) {
        
@@ -3230,5 +3308,4 @@ public class LoanAccountServiceFacadeWebTier implements LoanAccountServiceFacade
     public void uploadFile(Integer accountId, InputStream in, UploadedFileDto uploadedFileDto) {
         loanFileService.create(accountId, in, uploadedFileDto);
     }
-
 }

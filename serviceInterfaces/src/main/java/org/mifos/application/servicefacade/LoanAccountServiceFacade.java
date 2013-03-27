@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -73,6 +74,7 @@ import org.mifos.dto.screen.MultipleLoanAccountDetailsDto;
 import org.mifos.dto.screen.RepayLoanDto;
 import org.mifos.dto.screen.RepayLoanInfoDto;
 import org.mifos.dto.screen.UploadedFileDto;
+import org.mifos.framework.exceptions.ApplicationException;
 import org.mifos.platform.questionnaire.service.QuestionGroupDetail;
 import org.mifos.platform.validations.Errors;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -93,6 +95,9 @@ public interface LoanAccountServiceFacade extends LoanDisbursementDateValidation
     
     @PreAuthorize("isFullyAuthenticated() and hasAnyRole('ROLE_REDO_CAN_CREATE_BACKDATED_LOANS', 'ROLE_CAN_CREATE_NEW_LOAN_IN_SAVE_FOR_LATER_STATE', 'ROLE_CAN_CREATE_NEW_LOAN_IN_SUBMIT_FOR_APPROVAL_STATE')")
     List<CustomerSearchResultDto> retrieveCustomersThatQualifyForLoans(CustomerSearchDto customerSearchDto, boolean isNewGLIMCreation);
+    
+    @PreAuthorize("isFullyAuthenticated()")
+    List<CustomerSearchResultDto> retrieveClientsWithoutLoanOwner(CustomerSearchDto customerSearchDto, boolean isNewGLIMCreation, Integer clientId);
 
     @PreAuthorize("isFullyAuthenticated() and hasAnyRole('ROLE_REDO_CAN_CREATE_BACKDATED_LOANS', 'ROLE_CAN_CREATE_NEW_LOAN_IN_SAVE_FOR_LATER_STATE', 'ROLE_CAN_CREATE_NEW_LOAN_IN_SUBMIT_FOR_APPROVAL_STATE')")
     LoanCreationProductDetailsDto retrieveGetProductDetailsForLoanAccountCreation(Integer customerId);
@@ -276,4 +281,10 @@ public interface LoanAccountServiceFacade extends LoanDisbursementDateValidation
 
     @PreAuthorize("isFullyAuthenticated()")
     void uploadFile(Integer accountId, InputStream inputStream, UploadedFileDto fileMetadata);
+
+    @PreAuthorize("isFullyAuthenticated()")
+    void linkGuarantor(Integer guarantorId, Integer loanId);
+    
+    @PreAuthorize("isFullyAuthenticated()")
+    void handleGuarantors(List <Integer> closedLoanIds);
 }

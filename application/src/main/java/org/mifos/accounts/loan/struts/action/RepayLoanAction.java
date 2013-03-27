@@ -25,6 +25,7 @@ import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,6 +43,7 @@ import org.mifos.accounts.loan.util.helpers.LoanConstants;
 import org.mifos.accounts.servicefacade.AccountPaymentDto;
 import org.mifos.accounts.struts.actionforms.AccountApplyPaymentActionForm;
 import org.mifos.accounts.util.helpers.AccountConstants;
+import org.mifos.accounts.util.helpers.AccountStates;
 import org.mifos.application.admin.servicefacade.InvalidDateException;
 import org.mifos.application.master.business.PaymentTypeEntity;
 import org.mifos.application.master.util.helpers.MasterConstants;
@@ -246,6 +248,13 @@ public class RepayLoanAction extends BaseAction {
             
             this.loanAccountServiceFacade.makeEarlyGroupRepayment(repayLoanInfoDto, memberRepayment);
         }
+        Set <LoanBO> closedLoans = loan.getMemberAccounts();
+        List <Integer> closedLoanIds;
+        for(LoanBO closedLoan : closedLoans){
+            if(closedLoan.getState().getValue()==AccountStates.LOANACC_OBLIGATIONSMET)
+            closedLoanIds.add(closedLoan.getAccountId());
+        }
+        this.loanAccountServiceFacade.handleGuarantors(closedLoanIds);
 
         SessionUtils.removeAttribute(LoanConstants.TOTAL_REPAYMENT_AMOUNT, request);
         SessionUtils.removeAttribute(LoanConstants.WAIVED_REPAYMENT_AMOUNT, request);

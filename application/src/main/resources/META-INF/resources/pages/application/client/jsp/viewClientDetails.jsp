@@ -548,6 +548,28 @@ explanation of the license and how it is applied.
 								height="10"></td>
 						</tr>
 					</table>
+					
+					<table width="96%" border="0" cellpadding="0" cellspacing="0">
+					    <tr>
+					        <td width="50%" height="23" class="headingorange"><mifos:mifoslabel
+					        name="client.GuaranteeInfoHeading" bundle="ClientUIResources"></mifos:mifoslabel></td>
+					        <td width="50%" align="right" class="fontnormal"><html-el:link styleId="viewClientDetails.link.editPersonalInformation"
+	                                action="clientCustAction.do?method=editGuaranteeInfo&currentFlowKey=${requestScope.currentFlowKey}&randomNUm=${sessionScope.randomNUm}">
+                            <mifos:mifoslabel name="client.EditGuaranteeInformationLink" bundle="ClientUIResources"></mifos:mifoslabel>
+                            </html-el:link></td>
+					    </tr>
+					    <tr>
+					        <td width="50%" align="left" class="fontnormal">
+					        <mifos:mifoslabel
+                            name="client.GuaranteeType" bundle="ClientUIResources"></mifos:mifoslabel></td>
+					    </tr>
+					    <tr>
+                        <td width="50%" align="left" class="fontnormal">
+                        <mifos:mifoslabel
+                        name="client.ClientLabel" bundle="ClientUIResources"></mifos:mifoslabel></td>
+                    </tr>
+					</table>
+					
 					<table width="96%" border="0" cellpadding="0" cellspacing="0">
 						<tr>
 							<td width="50%" height="23" class="headingorange"><mifos:mifoslabel

@@ -119,6 +119,7 @@ import org.mifos.config.persistence.ConfigurationPersistence;
 import org.mifos.core.MifosRuntimeException;
 import org.mifos.customers.business.CustomerBO;
 import org.mifos.customers.client.business.ClientBO;
+import org.mifos.customers.client.struts.actionforms.ClientCustActionForm;
 import org.mifos.customers.persistence.CustomerDao;
 import org.mifos.customers.util.helpers.CustomerConstants;
 import org.mifos.dto.domain.CustomFieldDto;
@@ -1190,7 +1191,12 @@ public class LoanAccountAction extends AccountAppAction implements Questionnaire
         }
         return createLoanQuestionnaire.rejoinFlow(mapping);
     }
-
+    @TransactionDemarcate(joinToken = true)
+    public ActionForward linkGuarantor(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+            @SuppressWarnings("unused") HttpServletResponse response) throws Exception {
+        //get(mapping, form, request, response);
+        return get(mapping, form, request, response);
+}
     @TransactionDemarcate(joinToken = true)
     @Override
     public ActionForward editQuestionResponses(

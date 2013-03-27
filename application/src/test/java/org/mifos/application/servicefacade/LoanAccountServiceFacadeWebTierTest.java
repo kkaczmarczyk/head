@@ -156,7 +156,10 @@ public class LoanAccountServiceFacadeWebTierTest {
 
     @Mock
     private SavingsServiceFacade savingsServiceFacade;
-
+    
+    @Mock
+    private CenterServiceFacade centerServiceFacade;
+    
     @Mock
     private SavingsAccountDetailDto savingsAccountDetailDto;
     
@@ -175,7 +178,7 @@ public class LoanAccountServiceFacadeWebTierTest {
         loanAccountServiceFacade = new LoanAccountServiceFacadeWebTier(officeDao, loanProductDao, customerDao, personnelDao,
                 fundDao, loanDao, accountService, scheduleCalculatorAdaptor, loanBusinessService, loanScheduleService,
                 installmentsValidator, holidayServiceFacade, monthClosingServiceFacade, customerPersistence, configurationPersistence,
-                clientServiceFacade, savingsServiceFacade);
+                clientServiceFacade, savingsServiceFacade, centerServiceFacade);
         ((LoanAccountServiceFacadeWebTier) loanAccountServiceFacade).setTransactionHelper(hibernateTransactionHelper);
         rupee = new MifosCurrency(Short.valueOf("1"), "Rupee", BigDecimal.valueOf(1), "INR");
         userContext = TestUtils.makeUser();

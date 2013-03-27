@@ -96,6 +96,7 @@ public enum ActionForwards {
     viewAllClosedAccounts,
     getAllClosedAccounts,
     edit_success,
+    linkGuarantor,
     editPersonalInfo_success,
     editPersonalInfo_failure,
     previewEditPersonalInfo_success,
