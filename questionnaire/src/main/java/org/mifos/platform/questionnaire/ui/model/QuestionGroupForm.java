@@ -305,6 +305,26 @@ public class QuestionGroupForm extends ScreenObject {
                     break;
                 }
             }
+            
+            for(Iterator<SectionLinkDetail> iterator = sectionLinks.iterator(); iterator.hasNext();){
+                SectionLinkDetail sectionLinkDetail = iterator.next();
+                if(sectionLinkDetail.getAffectedSection().getName().equals(sectionToDelete.getName()))
+                    iterator.remove();
+                for(SectionQuestionDetail sectionQuestionDetail : sectionToDelete.getQuestionDetails()){
+                    if(sectionLinkDetail.getSourceQuestion().getQuestionDetail().getId().equals(sectionQuestionDetail.getQuestionDetail().getId()))
+                        iterator.remove();
+                }
+                
+            }
+            for(SectionQuestionDetail sectionQuestionDetail : sectionToDelete.getQuestionDetails()){
+                for(Iterator<QuestionLinkDetail> iterator = questionLinks.iterator(); iterator.hasNext();){
+                    QuestionLinkDetail questionLinkDetail = iterator.next();
+                    if(questionLinkDetail.getSourceQuestion().getQuestionDetail().getId().equals(sectionQuestionDetail.getQuestionId()))
+                        iterator.remove();
+                    if(questionLinkDetail.getAffectedQuestion().getQuestionDetail().getId().equals(sectionQuestionDetail.getQuestionId()))
+                        iterator.remove();
+                }
+            }
         }
     }
 
@@ -349,6 +369,20 @@ public class QuestionGroupForm extends ScreenObject {
                 }
                 break;
             }
+        }
+        
+        for(Iterator<SectionLinkDetail> iterator = sectionLinks.iterator(); iterator.hasNext();){
+            SectionLinkDetail sectionLinkDetail = iterator.next();
+            if(sectionLinkDetail.getSourceQuestion().getQuestionDetail().getId().equals(Integer.valueOf(questionId)))
+            iterator.remove();
+        }
+        
+        for(Iterator<QuestionLinkDetail> iterator = questionLinks.iterator(); iterator.hasNext();){
+            QuestionLinkDetail questionLinkDetail = iterator.next();
+            if(questionLinkDetail.getSourceQuestion().getQuestionDetail().getId().equals(Integer.valueOf(questionId)))
+                iterator.remove();
+            if(questionLinkDetail.getAffectedQuestion().getQuestionDetail().getId().equals(Integer.valueOf(questionId)))
+                iterator.remove();
         }
     }
 

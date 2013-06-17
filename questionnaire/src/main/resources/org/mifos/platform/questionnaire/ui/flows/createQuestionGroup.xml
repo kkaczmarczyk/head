@@ -34,7 +34,7 @@
     </view-state>
     
     <action-state id="deleteSection">
-        <evaluate expression="questionGroupController.deleteSection(questionGroupForm, flowRequestContext)"/>
+        <evaluate expression="questionGroupController.deleteSection(questionGroupForm, requestParameters._eventId_deleteSection)"/>
         <transition on="success" to="createQuestionGroup" />
     </action-state>
 
@@ -110,6 +110,13 @@
         <evaluate expression="questionGroupController.addLink(questionGroupForm, requestParameters.sourceQuestion, requestParameters.linkType, requestParameters.linkAppliesTo, 
                                 requestParameters.affectedQuestion, requestParameters.affectedSection, requestParameters.value, 
                                 requestParameters.additionalValue, flowScope.LinkTypes, flowRequestContext)"/>
+        <transition on="success" to="createQuestionGroup" />
+        <transition on="failure" to="createQuestionGroup" />
+    </action-state>
+    
+    <action-state id="removeLink">
+        <evaluate expression="questionGroupController.removeLink(questionGroupForm, requestParameters._eventId_removeLink, 
+        requestParameters.affectedQ, requestParameters.affectedS, requestParameters.linkValue, requestParameters.additionalLinkValue, flowRequestContext) "/>
         <transition on="success" to="createQuestionGroup" />
         <transition on="failure" to="createQuestionGroup" />
     </action-state>

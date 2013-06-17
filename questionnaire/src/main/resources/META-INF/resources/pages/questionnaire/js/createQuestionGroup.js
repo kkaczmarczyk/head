@@ -39,14 +39,18 @@ CreateQuestionGroup.moveSectionDown = function (sectionName){
     sectionToMoveDownBtn.click();
 }
 
-CreateQuestionGroup.addLink = function (value) {
+CreateQuestionGroup.addLink = function () {
     var addLinkBtn = document.getElementById('_eventId_addLink');
     addLinkBtn.click();
 }
 
-CreateQuestionGroup.removeLink = function (linkId) {
+CreateQuestionGroup.removeLink = function (sourceQuestion, affectedQuestion, affectedSection, linkValue, additionalLinkValue) {
     var removeLinkBtn = document.getElementById('_eventId_removeLink');
-    removeLinkBtn.value = linkId;
+    removeLinkBtn.value = sourceQuestion;
+    document.getElementById('affectedQ').value = affectedQuestion;
+    document.getElementById('affectedS').value = affectedSection;
+    document.getElementById('linkValue').value = linkValue;
+    document.getElementById('additionalLinkValue').value = additionalLinkValue;
 	removeLinkBtn.click();
 }
 
@@ -104,51 +108,71 @@ $(document).ready(function () {
     	}
     	
     });
-    
-    $('#linkType option').attr('disabled', true);
+     
     $('option[value=select]').attr('disabled', true);
     
     $("#sourceQuestion").change(function() {
     	var selected = $("#sourceQuestion option:selected");
     	var aff = $("#sourceQuestion").attr('value');
-    	$('#linkType option').attr('disabled', true);
-    	$('#affectedQuestion option').attr('disabled', false);
-    	$('#affectedQuestion option[value='+aff+']').attr('disabled', true);
+    	var sectionName = selected.attr("sectionName");
+    	
+    	$('#affectedQuestion option').css("display", "");
+    	$('#affectedQuestion option[value='+aff+']').css("display", "none");
+    	$('#affectedSection option').css("display", "");
+    	$('#affectedSection option[value='+sectionName+']').css("display", "none");
+    	
+    	$('#answers').css("display", "none");
+		$('#answers option').css("display", "none");
+		$('#linkType option').css("display", "none");
     	switch (selected.attr('name')){
+    		case "SINGLE_SELECT":
+    		case "MULTI_SELECT":
+    		case "SMART_SELECT":
+    		case "SMART_SINGLE_SELECT":
+    			$('#valueId').attr('value', '').attr('class', '').css("display", "none");
+    			$('#additionalValueId').attr('value', '').attr('class', '');
+    			$('#answers').css("display", "");
+    			$('.'+aff).css("display", "");
+    			$("form").valid();
+    			
+    			$('option[name=Not equals]').css("display", "");
+    			$('option[name=Equals]').css("display", "");
+    			break;
     		case "FREETEXT": 
-    			$('option[name=Not equals]').attr('disabled', false);
-    			$('option[name=Equals]').attr('disabled', false);
+    			$('#valueId').attr('class', '');
+    			$('#additionalValueId').attr('class', '');
+    			$("form").valid();
+    			
+    			$('option[name=Not equals]').css("display", "");
+    			$('option[name=Equals]').css("display", "");
     			break;
     		case "NUMERIC":
-    			$('option[name=Not equals]').attr('disabled', false);
-				$('option[name=Equals]').attr('disabled', false);
-				$('option[name=Greater]').attr('disabled', false);
-				$('option[name=Smaller]').attr('disabled', false);
-				$('option[name=Range]').attr('disabled', false);
+    			$('#valueId').attr('class', 'numeric');
+    			$('#additionalValueId').attr('class', 'numeric');
+    			$("form").valid();
+    			
+    			$('option[name=Not equals]').css("display", "");
+				$('option[name=Equals]').css("display", "");
+				$('option[name=Greater]').css("display", "");
+				$('option[name=Smaller]').css("display", "");
+				$('option[name=Range]').css("display", "");
 				break;
-    		case "MULTI_SELECT":
-    			$('option[name=Not equals]').attr('disabled', false);
-				$('option[name=Equals]').attr('disabled', false);
-				break;
-    		case "SINGLE_SELECT":
-    			$('option[name=Not equals]').attr('disabled', false);
-				$('option[name=Equals]').attr('disabled', false);
-				break;
-    		case "DATE":
-    			$('option[name=Date range]').attr('disabled', false);
-    			$('option[name=Before]').attr('disabled', false);
-    			$('option[name=After]').attr('disabled', false);
+			case "DATE":
+				$('#valueId').attr('class', 'date-pick');
+				$('#additionalValueId').attr('class', 'date-pick');
+				$("form").valid();
+				
+    			$('option[name=Date range]').css("display", "");
+    			$('option[name=Before]').css("display", "");
+    			$('option[name=After]').css("display", "");
     			break;
-    		case "SMART_SELECT":
-    			$('option[name=Not equals]').attr('disabled', false);
-				$('option[name=Equals]').attr('disabled', false);
-				break;
-    		case "SMART_SINGLE_SELECT":
-    			$('option[name=Not equals]').attr('disabled', false);
-				$('option[name=Equals]').attr('disabled', false);
-				break;
     	}
     });
+    
+    $("#answers").change(function(){
+    	$('#valueId').attr('value', $(this).val());
+    });
+    
     $("#linkType").change(function() {
     	switch ($("#linkType option:selected").html()) {
     	case "Equals":
@@ -167,4 +191,43 @@ $(document).ready(function () {
     		break;
     	}
     });
+
+    $("form").validate(
+        {
+            errorPlacement: function(error, element) {
+                error.insertAfter( element );
+            },
+            errorClass: "validationErr"
+        }
+    );
+
+    $(".date-pick").change(function(event) {
+        $("form").valid();
+    });
+    
+    $(".numeric").change(function(event) {
+        $("form").valid();
+    });
+
+    $.validator.addMethod('date-pick', function (value) {
+        return (
+            value==null ||
+            value=="" ||
+            (   /^([0]?[1-9]|[12][0-9]|3[01])[/]([0]?[1-9]|1[012])[/]\d{4}$/.test(value)
+                &&
+                Date.parse(value)
+            )
+        );
+    }, 'Please enter a valid date in format dd/mm/yyyy');
+    
+    $.validator.addMethod('numeric', function (value) {
+        return (
+            value==null ||
+            value=="" ||
+            (   /^[0-9]{0,9}$/.test(value)
+                &&
+                parseInt(value)
+            )
+        );
+    }, 'Please enter a valid number');
 });

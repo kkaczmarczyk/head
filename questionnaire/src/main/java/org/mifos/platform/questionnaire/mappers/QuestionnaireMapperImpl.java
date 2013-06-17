@@ -695,16 +695,10 @@ public class QuestionnaireMapperImpl implements QuestionnaireMapper {
                 makeEntry(QuestionType.SMART_SINGLE_SELECT, AnswerType.SMARTSINGLESELECT));
     }
     public SectionQuestion getSectionQuestionById (Integer sectionQuestionId){
-        /*SectionQuestion sectionQuestion = new SectionQuestion();
-        List<SectionQuestion> sectionQuestions;
-        sectionQuestions = sectionQuestionDao.retrieveFromSectionQuestionId(sectionQuestionId);*/
         return sectionQuestionDao.retrieveFromSectionQuestionId(sectionQuestionId).get(0);
     }
     
     public Section getSectionById (Integer sectionId){
-        /*SectionQuestion sectionQuestion = new SectionQuestion();
-        List<Section> sectionQuestions;
-        sectionQuestions = sectionDao.retrieveFromSectionId(sectionId);*/
         return sectionDao.retrieveFromSectionId(sectionId).get(0);
     }
     
@@ -715,11 +709,13 @@ public class QuestionnaireMapperImpl implements QuestionnaireMapper {
             questionGroupLink.setAdditionalValue(questionLinkDetail.getAdditionalValue());
             questionGroupLink.setSourceSectionQuestion(getSectionQuestionById(questionLinkDetail.getSourceQuestion().getId()));
             questionGroupLink.setConditionTypeId(questionLinkDetail.getLinkType());
+            questionGroupLink.setId(questionLinkDetail.getQuestionGroupLinkId());
         } else {
             questionGroupLink.setValue(sectionLinkDetail.getValue());
             questionGroupLink.setAdditionalValue(sectionLinkDetail.getAdditionalValue());
             questionGroupLink.setSourceSectionQuestion(getSectionQuestionById(sectionLinkDetail.getSourceQuestion().getId()));
             questionGroupLink.setConditionTypeId(sectionLinkDetail.getLinkType());
+            questionGroupLink.setId(sectionLinkDetail.getQuestionGroupLinkId());
         }
         return questionGroupLink;
     }
@@ -728,6 +724,7 @@ public class QuestionnaireMapperImpl implements QuestionnaireMapper {
         SectionQuestionLink sectionQuestionLink = new SectionQuestionLink();
         sectionQuestionLink.setQuestionGroupLink(questionGroupLink);
         sectionQuestionLink.setAffectedSectionQuestion(getSectionQuestionById(questionLinkDetail.getAffectedQuestion().getId()));
+        sectionQuestionLink.setId(questionLinkDetail.getLinkId());
         return sectionQuestionLink;
     }
     
@@ -735,6 +732,7 @@ public class QuestionnaireMapperImpl implements QuestionnaireMapper {
         SectionLink sectionLink = new SectionLink();
         sectionLink.setAffectedSection(getSectionById(sectionLinkDetail.getAffectedSection().getId()));
         sectionLink.setQuestionGroupLink(questionGroupLink);
+        sectionLink.setId(sectionLinkDetail.getLinkId());
         return sectionLink;
     }
     
@@ -746,6 +744,9 @@ public class QuestionnaireMapperImpl implements QuestionnaireMapper {
             questionLinkDetail.setAdditionalValue(sectionQuestionLink.getQuestionGroupLink().getAdditionalValue());
             questionLinkDetail.setLinkType(sectionQuestionLink.getQuestionGroupLink().getConditionTypeId());
             questionLinkDetail.setProperLinkTypeDisplay(sectionQuestionLink.getQuestionGroupLink().getConditionType());
+            questionLinkDetail.setLinkId(sectionQuestionLink.getId());
+            questionLinkDetail.setQuestionGroupLinkId(sectionQuestionLink.getQuestionGroupLink().getId());
+            questionLinkDetail.setState(true);
             SectionQuestion sectionQuestion = sectionQuestionLink.getQuestionGroupLink().getSourceSectionQuestion();
             questionLinkDetail.setSourceQuestion(mapToSectionQuestionDetail(sectionQuestion,
                     sectionQuestion.isRequired(), sectionQuestion.isShowOnPage(), 
@@ -767,6 +768,9 @@ public class QuestionnaireMapperImpl implements QuestionnaireMapper {
             sectionLinkDetail.setAdditionalValue(sectionLink.getQuestionGroupLink().getAdditionalValue());
             sectionLinkDetail.setLinkType(sectionLink.getQuestionGroupLink().getConditionTypeId());
             sectionLinkDetail.setProperLinkTypeDisplay(sectionLink.getQuestionGroupLink().getConditionType());
+            sectionLinkDetail.setLinkId(sectionLink.getId());
+            sectionLinkDetail.setQuestionGroupLinkId(sectionLink.getQuestionGroupLink().getId());
+            sectionLinkDetail.setState(true);
             SectionQuestion sectionQuestion = sectionLink.getQuestionGroupLink().getSourceSectionQuestion();
             sectionLinkDetail.setSourceQuestion(mapToSectionQuestionDetail(sectionQuestion,
                     sectionQuestion.isRequired(), sectionQuestion.isShowOnPage(), 

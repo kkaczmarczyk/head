@@ -75,4 +75,15 @@ public class SectionQuestionDetailForm {
     public void setSequenceNumber(Integer sequenceNumber) {
         sectionQuestionDetail.setSequenceNumber(sequenceNumber);
     }
+    public String[] getValues() {
+        String[] values = new String[getSectionQuestionDetail().getSelections().size()];
+        for (int i = 0, selectionsSize = getSectionQuestionDetail().getSelections().size(); i < selectionsSize; i++) {
+            values[i] = getSectionQuestionDetail().getSelections().get(i).toString();
+        }
+        return values;
+    }
+    
+    public SectionQuestionDetail getSectionQuestionDetail() {
+        return sectionQuestionDetail;
+    }
 }

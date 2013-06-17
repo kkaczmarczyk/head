@@ -617,13 +617,14 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
             Date responseDate = new SimpleDateFormat("dd/MM/yyyy").parse(response);
             Date firstDate = new SimpleDateFormat("dd/MM/yyyy").parse(link.getValue());
             Date secondDate = new SimpleDateFormat("dd/MM/yyyy").parse(link.getAdditionalValue());
-            return responseDate.after(firstDate) && responseDate.before(secondDate);
+            return (responseDate.after(firstDate) && responseDate.before(secondDate)) || (responseDate.before(firstDate) && responseDate.after(secondDate));
         }
         
         if (link.getConditionType().equals(QuestionGroupLink.CONDITION_TYPE_RANGE)) {
             int responseInt = Integer.parseInt(response);
-            return responseInt > Integer.parseInt(link.getValue()) && 
-                    responseInt < Integer.parseInt(link.getAdditionalValue());
+            return (responseInt >= Integer.parseInt(link.getValue()) && 
+                    responseInt <= Integer.parseInt(link.getAdditionalValue())) || (responseInt <= Integer.parseInt(link.getValue()) && 
+                            responseInt >= Integer.parseInt(link.getAdditionalValue()));
         }
         
         return false;
@@ -635,25 +636,20 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
     
     public void createQuestionLinks (List<QuestionLinkDetail> questionLinks){
         for(QuestionLinkDetail questionLinkDetail : questionLinks){
+            QuestionGroupLink questionGroupLink = questionnaireMapper.mapToQuestionGroupLink(questionLinkDetail, null);
+            questionGroupLinkDao.saveOrUpdate(questionGroupLink);
             
-            QuestionGroupLink questionGroupLink = new QuestionGroupLink();
-            questionGroupLink = questionnaireMapper.mapToQuestionGroupLink(questionLinkDetail, null);
-            questionGroupLinkDao.create(questionGroupLink);
-            
-            SectionQuestionLink sectionQuestionLink = new SectionQuestionLink();
-            sectionQuestionLink = questionnaireMapper.mapToQuestionLink(questionLinkDetail, questionGroupLink);
-            sectionQuestionLinkDao.create(sectionQuestionLink);
+            SectionQuestionLink sectionQuestionLink = questionnaireMapper.mapToQuestionLink(questionLinkDetail, questionGroupLink);
+            sectionQuestionLinkDao.saveOrUpdate(sectionQuestionLink);
         }
     }
     public void createSectionLinks(List<SectionLinkDetail> sectionLinks){
         for(SectionLinkDetail sectionLinkDetail : sectionLinks){
-            QuestionGroupLink questionGroupLink = new QuestionGroupLink();
-            questionGroupLink = questionnaireMapper.mapToQuestionGroupLink(null, sectionLinkDetail);
-            questionGroupLinkDao.create(questionGroupLink);
+            QuestionGroupLink questionGroupLink = questionnaireMapper.mapToQuestionGroupLink(null, sectionLinkDetail);
+            questionGroupLinkDao.saveOrUpdate(questionGroupLink);
             
-            SectionLink sectionLink = new SectionLink();
-            sectionLink = questionnaireMapper.mapToSectionLink(sectionLinkDetail, questionGroupLink);
-            sectionLinkDao.create(sectionLink);
+            SectionLink sectionLink = questionnaireMapper.mapToSectionLink(sectionLinkDetail, questionGroupLink);
+            sectionLinkDao.saveOrUpdate(sectionLink);
             }
     }
 }

@@ -31,6 +31,10 @@ public class QuestionLinkDetail implements Serializable {
     private String additionalValue;
     private Integer linkType;
     private String linkTypeDisplay;
+    private boolean state;
+    
+    private Integer linkId;
+    private Integer questionGroupLinkId;
     
     @SuppressWarnings({"UnusedDeclaration", "PMD.UnnecessaryConstructor", "PMD.UncommentedEmptyConstructor"})
     public QuestionLinkDetail() {    
@@ -82,23 +86,56 @@ public class QuestionLinkDetail implements Serializable {
     public void setLinkType(Integer linkType) {
         this.linkType = linkType;
     }
+    @SuppressWarnings("PMD.NPathComplexity")
     public void setProperLinkTypeDisplay(String linkTypeDisplay){
-        if(linkTypeDisplay.equals("QuestionGroupLink.equals"))
+        if("QuestionGroupLink.equals".equals(linkTypeDisplay)){
             this.linkTypeDisplay =  "Equals";
-        if(linkTypeDisplay.equals("QuestionGroupLink.notEquals"))
+        }
+        if("QuestionGroupLink.notEquals".equals(linkTypeDisplay)){
             this.linkTypeDisplay =  "Not equals";
-        if(linkTypeDisplay.equals("QuestionGroupLink.greater"))
+        }
+        if("QuestionGroupLink.greater".equals(linkTypeDisplay)){
             this.linkTypeDisplay =  "Greater";
-        if(linkTypeDisplay.equals("QuestionGroupLink.smaller"))
+        }
+        if("QuestionGroupLink.smaller".equals(linkTypeDisplay)){
             this.linkTypeDisplay =  "Smaller";
-        if(linkTypeDisplay.equals("QuestionGroupLink.range"))
+        }
+        if("QuestionGroupLink.range".equals(linkTypeDisplay)){
             this.linkTypeDisplay =  "Range";
-        if(linkTypeDisplay.equals("QuestionGroupLink.dateRange"))
+        }
+        if("QuestionGroupLink.dateRange".equals(linkTypeDisplay)){
             this.linkTypeDisplay =  "Date range";
-        if(linkTypeDisplay.equals("QuestionGroupLink.before"))
+        }
+        if("QuestionGroupLink.before".equals(linkTypeDisplay)){
             this.linkTypeDisplay =  "Before";
-        if(linkTypeDisplay.equals("QuestionGroupLink.after"))
+        }
+        if("QuestionGroupLink.after".equals(linkTypeDisplay)){
             this.linkTypeDisplay =  "After";
+        }
+    }
+
+    public boolean isState() {
+        return state;
+    }
+
+    public void setState(boolean state) {
+        this.state = state;
+    }
+
+    public Integer getLinkId() {
+        return linkId;
+    }
+
+    public void setLinkId(Integer linkId) {
+        this.linkId = linkId;
+    }
+
+    public Integer getQuestionGroupLinkId() {
+        return questionGroupLinkId;
+    }
+
+    public void setQuestionGroupLinkId(Integer questionGroupLinkId) {
+        this.questionGroupLinkId = questionGroupLinkId;
     }
     
 }

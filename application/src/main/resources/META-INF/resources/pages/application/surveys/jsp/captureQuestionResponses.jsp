@@ -87,6 +87,7 @@ explanation of the license and how it is applied.
 				$('.question.date-pick').change(updateQuestions);
 				$('.question').blur(updateQuestions);
 				$('input[type=radio]').click(updateQuestions);
+				$('input[type=checkbox]').click(updateQuestions);
 			});
 		</script>
 		

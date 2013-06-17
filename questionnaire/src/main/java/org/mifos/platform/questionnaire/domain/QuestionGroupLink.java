@@ -8,19 +8,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Formula;
 
-@NamedQueries( {
-    @NamedQuery(
-            name = "QuestionGroupLink.retrieveAllConditions",
-            query = "from LookUpValueEntity value, LookUpEntity entity where " +
-                    "value.lookUpEntity.entityId = (SELECT entityId FROM entity where entity.entityType=ConditionType)"
-    )
-})
 @Entity
 @Table(name = "question_group_link")
 public class QuestionGroupLink implements Serializable {

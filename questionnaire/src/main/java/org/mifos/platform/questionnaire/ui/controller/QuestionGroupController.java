@@ -26,6 +26,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +135,7 @@ public class QuestionGroupController extends QuestionnaireController {
     public String defineQuestionGroup(QuestionGroupForm questionGroupForm, RequestContext requestContext, boolean createMode) {
         String result = "success";
         if (!questionGroupHasErrors(questionGroupForm, requestContext)) {
-            QuestionGroupDetail questionGroupDetail = new QuestionGroupDetail();
+            QuestionGroupDetail questionGroupDetail = null;
             try {
                 if (createMode) {
                     questionGroupForm.setActive(true);
@@ -148,11 +149,8 @@ public class QuestionGroupController extends QuestionnaireController {
                 if (containsCreateLoanEventSource(questionGroupForm.getEventSources()) && questionGroupForm.getApplyToAllLoanProducts()) {
                     questionnaireServiceFacade.applyToAllLoanProducts(questionGroupDetail.getId());
                 }
-                List<QuestionLinkDetail> questionLinkDetails = setUpdatedQuestionForQuestionLinks(questionGroupForm.getQuestionLinks(), questionGroupDetail);
-                List<SectionLinkDetail> sectionLinkDetails = setUpdatedSectionForQuestionLinks(questionGroupForm.getSectionLinks(), questionGroupDetail);
-                
-                /*questionLinkDetails.removeAll(questionGroupForm.getQuestionGroupDetail().getQuestionLinks()); //remove already added links
-                sectionLinkDetails.removeAll(questionGroupForm.getQuestionGroupDetail().getSectionLinks());*/
+                List<QuestionLinkDetail> questionLinkDetails = setFilledQuestionDetailForQuestionLinks(questionGroupForm.getQuestionLinks(), questionGroupDetail);
+                List<SectionLinkDetail> sectionLinkDetails = setFilledSectionDetailForQuestionLinks(questionGroupForm.getSectionLinks(), questionGroupDetail);
                 
                 questionnaireServiceFacade.createQuestionLinks(questionLinkDetails);
                 questionnaireServiceFacade.createSectionLinks(sectionLinkDetails);
@@ -246,6 +244,7 @@ public class QuestionGroupController extends QuestionnaireController {
         questionLinkDetail.setValue(value);
         questionLinkDetail.setLinkType(Integer.valueOf(linkType));
         questionLinkDetail.setLinkTypeDisplay(linkTypeDisplay);
+        questionLinkDetail.setState(false);
         if(additionalValue!=null)
             questionLinkDetail.setAdditionalValue(additionalValue);
         
@@ -263,6 +262,7 @@ public class QuestionGroupController extends QuestionnaireController {
         sectionLinkDetail.setValue(value);
         sectionLinkDetail.setLinkType(Integer.valueOf(linkType));
         sectionLinkDetail.setLinkTypeDisplay(linkTypeDisplay);
+        sectionLinkDetail.setState(false);
         if(additionalValue!=null)
             sectionLinkDetail.setAdditionalValue(additionalValue);
         return sectionLinkDetail;
@@ -294,14 +294,14 @@ public class QuestionGroupController extends QuestionnaireController {
         }
         return null;
     }
-    public List<QuestionLinkDetail> setUpdatedQuestionForQuestionLinks(List<QuestionLinkDetail> questionLinkDetails, QuestionGroupDetail questionGroupDetail){
+    public List<QuestionLinkDetail> setFilledQuestionDetailForQuestionLinks(List<QuestionLinkDetail> questionLinkDetails, QuestionGroupDetail questionGroupDetail){
         for(QuestionLinkDetail questionLinkDetail : questionLinkDetails){
             questionLinkDetail.setSourceQuestion(findQuestionDetailByNickname(questionGroupDetail, String.valueOf(questionLinkDetail.getSourceQuestion().getQuestionDetail().getNickname())));
             questionLinkDetail.setAffectedQuestion(findQuestionDetailByNickname(questionGroupDetail, String.valueOf(questionLinkDetail.getAffectedQuestion().getQuestionDetail().getNickname())));
         }
         return questionLinkDetails;
     }
-    public List<SectionLinkDetail> setUpdatedSectionForQuestionLinks(List<SectionLinkDetail> sectionLinkDetails, QuestionGroupDetail questionGroupDetail){
+    public List<SectionLinkDetail> setFilledSectionDetailForQuestionLinks(List<SectionLinkDetail> sectionLinkDetails, QuestionGroupDetail questionGroupDetail){
         for(SectionLinkDetail sectionLinkDetail : sectionLinkDetails){
             sectionLinkDetail.setSourceQuestion(findQuestionDetailByNickname(questionGroupDetail, String.valueOf(sectionLinkDetail.getSourceQuestion().getQuestionDetail().getNickname())));
             sectionLinkDetail.setAffectedSection(findSectionDetailByName(questionGroupDetail, sectionLinkDetail.getAffectedSection().getName()));
@@ -332,6 +332,30 @@ public class QuestionGroupController extends QuestionnaireController {
         return result;
     }
     
+    public String removeLink(QuestionGroupForm questionGroupForm,
+            String sourceQuestionId, String affectedQuestionId, String affectedSectionName, String value, String additionalValue, RequestContext requestContext) {
+        String result = "success";
+        if(!affectedQuestionId.isEmpty()){
+            for(Iterator<QuestionLinkDetail> iterator = questionGroupForm.getQuestionLinks().iterator(); iterator.hasNext();){
+                QuestionLinkDetail questionLinkDetail = iterator.next();
+                if(questionLinkDetail.getSourceQuestion().getQuestionId()==Integer.valueOf(sourceQuestionId) && 
+                        questionLinkDetail.getAffectedQuestion().getQuestionId()==Integer.valueOf(affectedQuestionId) &&
+                        questionLinkDetail.getValue().equals(value) && questionLinkDetail.getAdditionalValue().equals(additionalValue))
+                    iterator.remove();
+            }
+        } else {
+            for(Iterator<SectionLinkDetail> iterator = questionGroupForm.getSectionLinks().iterator(); iterator.hasNext();){
+                SectionLinkDetail sectionLinkDetail = iterator.next();
+                if(sectionLinkDetail.getSourceQuestion().getQuestionId()==Integer.valueOf(sourceQuestionId) && 
+                        sectionLinkDetail.getAffectedSection().getName().equals(affectedSectionName) &&
+                                sectionLinkDetail.getValue().equals(value) && sectionLinkDetail.getAdditionalValue().equals(additionalValue))
+                    iterator.remove();
+            }
+            
+        }
+        return result;
+    }
+    
     public String addSection(QuestionGroupForm questionGroupForm, RequestContext requestContext) {
         if (questionGroupForm.hasNoQuestionsInCurrentSection()) {
             constructErrorMessage(requestContext.getMessageContext(),
@@ -343,13 +367,11 @@ public class QuestionGroupController extends QuestionnaireController {
     }
 
     public String deleteSection(QuestionGroupForm questionGroupForm, String sectionName) {
-        //TODO: usuń wszystki linki ktore mialy ta section w affected
         questionGroupForm.removeSection(sectionName);
         return "success";
     }
 
     public String deleteQuestion(QuestionGroupForm questionGroupForm, String sectionName, String questionId) {
-        //TODO: usuń wszystki linki ktore mialy to question jako source lub affecte
         questionGroupForm.removeQuestion(sectionName, questionId);
         return "success";
     }

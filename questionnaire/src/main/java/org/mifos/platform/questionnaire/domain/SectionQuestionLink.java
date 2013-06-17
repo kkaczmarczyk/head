@@ -22,13 +22,7 @@ import javax.persistence.Table;
     @NamedQuery(
             name = "SectionQuestionLink.retrieveAllConditions",
             query = "SELECT new org.mifos.application.master.business.LookUpValueEntity(value.lookUpId,value.lookUpName) " +
-            		"FROM LookUpValueEntity value, LookUpEntity entity WHERE " +
-                    "value.lookUpEntity.entityId = (SELECT entityId FROM entity where entity.entityType='ConditionType') and entity.entityType='ConditionType'"
-    ),
-    @NamedQuery(
-            name = "SectionQuestionLink.createSectionQuestionLinks",
-            query = "SELECT new org.mifos.application.master.business.LookUpValueEntity(value.lookUpId,value.lookUpName) " +
-                    "FROM LookUpValueEntity value, LookUpEntity entity WHERE " +
+                    "FROM org.mifos.application.master.business.LookUpValueEntity value, org.mifos.application.master.business.LookUpEntity entity WHERE " +
                     "value.lookUpEntity.entityId = (SELECT entityId FROM entity where entity.entityType='ConditionType') and entity.entityType='ConditionType'"
     )
 })
